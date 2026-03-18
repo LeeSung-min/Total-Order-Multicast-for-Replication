@@ -1,0 +1,19 @@
+Why does replication need total ordering for conflicting operations? Use a concrete example
+Basically if we don't have total ordering, the replicas might apply updates in different orders and end up
+with a completely different data. An example of this is if a bank account has $100 and if there are 2 seperate
+updates that happen at the same time. if replica 1 adds $10 and replica 2 adds 10%, replica 1 makes the balance
+become $121 but if we switch the order of replica 1 and replica 2 the balance becomes $120. the importance of total
+ordering is to make sure they both apply at the same exact time in the exact same sequence so the data matches.
+
+What do Lamport clocks guarantee and what do they not guarantee?
+If event A causes event B, A will get a smaller timestamp, when you add a tie-breaker they basically make the whole
+system agree on one strict timeline. They don't guarantee any tracking of real-world time.
+
+Your algorithm assumes reliable FIFO communication. What breaks if messages can be lost or delivered out of FIFO order?
+if the messages are lost then the system goes into deadlock, so the replicas will be sitting there forever. If the
+delivery is out of order then the system ruins the data. In this case a replica make get a newer message first and assume
+it's safe to process the queue but accidentally apply an old message that finally arives to the node.
+
+Where is the "Coordination" happening in your implementation (middleware vs application logic)
+the coordination happens in the middleware as that does all the heavy lifting. the application logic is just listening
+to the middleware and updates whenever the middleware says to update.
